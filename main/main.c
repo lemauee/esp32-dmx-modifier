@@ -1,18 +1,3 @@
-/*
-
-  ESP-IDF DMX Write
-
-  Writes data to the DMX bus. The value of every byte in the DMX packet (except
-  the start code) is incremented by 1 every 1 second.
-
-  Note: this example is for use with the ESP-IDF. It will not work on Arduino!
-
-  Created 20 June 2022
-  By Mitch Weisbrod
-
-  https://github.com/someweisguy/esp_dmx
-
-*/
 #include "esp_dmx.h"
 #include "esp_log.h"
 #include "esp_system.h"
@@ -33,25 +18,30 @@ void app_main() {
   dmx_driver_install(dmx_num, &config, NULL, personality_count);
   dmx_set_pin(dmx_num, TX_PIN, RX_PIN, EN_PIN);
 
-  TickType_t last_update = xTaskGetTickCount();
+  dmx_packet_t packet;
+
   while (1) {
     TickType_t now = xTaskGetTickCount();
 
-    // Send data and block until it's sent
-    dmx_send_num(dmx_num, DMX_PACKET_SIZE);
-    dmx_wait_sent(dmx_num, DMX_TIMEOUT_TICK);
+    // Block until a packet is received
+    if (dmx_receive(dmx_num, &packet, DMX_TIMEOUT_TICK)) {
+      ESP_LOGI(TAG, "DMX received.");
 
-    if (now - last_update >= pdMS_TO_TICKS(1000)) {
-      // Only update data every 1000ms
-      for (int i = 1; i < DMX_PACKET_SIZE; i++) {
-        data[i]++;
-      }
+      dmx_read(dmx_num, data, DMX_PACKET_SIZE);
+      ESP_LOGI(TAG, "Start code: %02x, Size: %i",
+                packet.sc, packet.size);
+      ESP_LOG_BUFFER_HEX(TAG, data, 16);  // Log first 16 bytes
+
+      // Send data and block until it's sent
+      dmx_send_num(dmx_num, DMX_PACKET_SIZE);
+      dmx_wait_sent(dmx_num, DMX_TIMEOUT_TICK);
       dmx_write(dmx_num, data, DMX_PACKET_SIZE);
-      ESP_LOGI(TAG, "Incremented packet slots to 0x%02x", data[1]);
-      last_update = now;
+      ESP_LOGI(TAG, "Sent first DMX value 0x%02x", data[1]);
+    } else {
+      // DMX timed out after having been previously connected
+      ESP_LOGI(TAG, "No DMX reveived.");
     }
-
-    // Only send a packet every 30ms
-    vTaskDelayUntil(&now, pdMS_TO_TICKS(30));
+    // Only send a packet every ms
+    vTaskDelayUntil(&now, pdMS_TO_TICKS(1000));
   }
 }
