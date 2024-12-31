@@ -1,5 +1,6 @@
 #include "esp_dmx.h"
 #include "esp_log.h"
+#include "esp_random.h"
 #include "esp_system.h"
 #include "freertos/task.h"
 
@@ -41,15 +42,38 @@ void app_main() {
       //          packet.sc, packet.size);
       // ESP_LOG_BUFFER_HEX(TAG, data, 16);  // Log first 16 bytes
 
-      // ADJ ACCU Scan 250 at Address 1-8
-      data_out[1] = data_in[1]; // Pan
-      data_out[2] = data_in[2]; // Tilt
-      data_out[3] = data_in[3]; // Color
-      data_out[4] = 0; // Gobo - Fix Spot
-      data_out[5] = 0; // Gobo Rotation - No Rotation
-      data_out[6] = 32 + data_in[4]/8; // Shutter/Storbe - Only use dimmer range
-      data_out[7] = 0;  // Reset/internal programs - Normal color change
-      data_out[8] = 0; // Speed of pan/tilt movement - Max speed
+      // PAR
+      data_out[5] = data_in[1]; // Par rechts
+      data_out[6] = data_in[1]; // Par rechts
+
+      // Wandarme
+      data_out[12] = 255; // Schalter ein 
+      data_out[16] = data_in[2]; // TODO: Bereich einschränken?
+
+      // Deckenlampen
+      data_out[13] = data_in[3];
+
+      // Stern
+      data_out[14] = data_in[4];
+
+      // Ganglicht
+      data_out[15] = data_in[5];
+
+      // Baum
+      data_out[3] = data_in[6];
+
+      // Root Par
+
+      // Theater Spot 60 WRGBW
+
+      // Flatbeam Duo 
+      // Lagerfeuer
+      // TODO: let everything happen in float
+      float scaling = ((float)(data_in[16]))/((float)255.F);
+      data_out[100] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
+      data_out[101] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
+      data_out[102] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
+      data_out[103] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
 
       // Send data and block until it's sent
       dmx_send_num(dmx_num_send, DMX_PACKET_SIZE);
@@ -61,6 +85,6 @@ void app_main() {
       // ESP_LOGI(TAG, "No DMX reveived.");
     }
     // Only send a packet every 100 ms
-    vTaskDelayUntil(&now, pdMS_TO_TICKS(100));
+    // vTaskDelayUntil(&now, pdMS_TO_TICKS(100));
   }
 }
