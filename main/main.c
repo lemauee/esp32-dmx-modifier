@@ -62,18 +62,53 @@ void app_main() {
       // Baum
       data_out[3] = data_in[6];
 
-      // Root Par
+      // Root Par 6
+      // L?
+      const size_t start_root_par_l = 18;
+      data_out[start_root_par_l] = data_in[7]; // red
+      data_out[start_root_par_l+1] = data_in[8]; // green
+      data_out[start_root_par_l+2] = data_in[9]; // blue
+      data_out[start_root_par_l+3] = data_in[10]; // white
+      data_out[start_root_par_l+4] = 0; // amber
+      data_out[start_root_par_l+5] = 0; // lime?
+      // R?
+      const size_t start_root_par_r = 25;
+      data_out[start_root_par_r] = data_out[start_root_par_l];
+      data_out[start_root_par_r+1] = data_out[start_root_par_l+1];
+      data_out[start_root_par_r+2] = data_out[start_root_par_l+2];
+      data_out[start_root_par_r+3] = data_out[start_root_par_l+3];
+      data_out[start_root_par_r+4] = data_out[start_root_par_l+4];
+      data_out[start_root_par_r+5] = data_out[start_root_par_l+5];
 
       // Theater Spot 60 WRGBW
+      // L?
+      const size_t start_theater_l = 34;
+      data_out[start_theater_l] = 255; // dimmer
+      data_out[start_theater_l+1] = 255; // dimmer fine
+      data_out[start_theater_l+2] = 0; // strobe
+      data_out[start_theater_l+3] = data_in[11]; // red
+      data_out[start_theater_l+4] = data_in[12]; // green
+      data_out[start_theater_l+5] = data_in[13]; // blue
+      data_out[start_theater_l+6] = data_in[14]; // white
+      // R?
+      const size_t start_theater_r = 50;
+      data_out[start_theater_r] = data_out[start_theater_l];
+      data_out[start_theater_r+1] = data_out[start_theater_l+1];
+      data_out[start_theater_r+2] = data_out[start_theater_l+2];
+      data_out[start_theater_r+3] = data_out[start_theater_l+3];
+      data_out[start_theater_r+4] = data_out[start_theater_l+4];
+      data_out[start_theater_r+5] = data_out[start_theater_l+5];
+      data_out[start_theater_r+6] = data_out[start_theater_l+6];
 
       // Flatbeam Duo 
       // Lagerfeuer
-      // TODO: let everything happen in float
       float scaling = ((float)(data_in[16]))/((float)255.F);
-      data_out[100] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
-      data_out[101] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
-      data_out[102] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
-      data_out[103] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling);
+      data_out[100] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling); // red
+      data_out[101] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling); // green
+      data_out[102] = (uint8_t)((float)(64 + ((uint8_t)esp_random())/2)*scaling); // blue
+
+      // White
+      data_out[103] = data_in[16]; // white
 
       // Send data and block until it's sent
       dmx_send_num(dmx_num_send, DMX_PACKET_SIZE);
